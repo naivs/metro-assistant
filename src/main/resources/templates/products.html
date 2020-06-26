@@ -1,0 +1,34 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+    <table>
+        <thead>
+            <tr>
+                <th> Id </th>
+                <th> Name </th>
+                <th> Regular Price </th>
+                <th> ME </th>
+                <th> Wholesale prices </th>
+                <th> Left PCT </th>
+            </tr>
+        </thead>
+        <tbody>
+            <!--<tr th:if="${products}">-->
+                <!--<td colspan="2"> No Metro Products Available </td>-->
+            <!--</tr>-->
+            <tr th:each="product : ${products}">
+                <td><span th:text="${product.id}"> Id </span></td>
+                <td><span th:text="${product.name}"> Name </span></td>
+                <td><span th:text="${product.regularPrice}"> price </span></td>
+                <td><span th:text="${product.me}"> ME </span></td>
+                <td><span th:text="${product.wholesalePrice}"> WholeSale </span></td>
+                <td><span th:text="${product.leftPct}"> Left </span></td>
+            </tr>
+        </tbody>
+    </table>
+    <!--<input value="Add" type="button" onclick="location.href='/metro-assistant/add'" />-->
+    <form action="#" th:action="@{/metro-assistant}" th:method="post">
+        <input type="text" th:name="productUrl">
+        <input type="submit" name="Add">
+    </form>
+</html>
