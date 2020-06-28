@@ -1,0 +1,18 @@
+spring:
+  profiles: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5433/metro-assistant
+    username: admin
+    password: admin
+  jpa:
+    hibernate:
+      ddl-auto: update
+---
+spring:
+  profiles: core
+  datasource:
+    url: jdbc:postgresql://192.168.0.2:5433/metro-assistant
+    username: postgres
+    password: 123
+metro:
+  base-url: https://nn.metro-cc.ru

@@ -16,7 +16,7 @@ import java.net.URI;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class HttpClient {
+public class MetroClient {
 
     private final MetroConfig metroConfig;
     private RestTemplate restTemplate;
