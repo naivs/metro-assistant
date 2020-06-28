@@ -14,15 +14,17 @@
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="product : ${products}">
-                    <th scope="row"><span th:text="${product.id}">id</span></th>
-                    <td><span th:text="${product.name}">name</span></td>
-                    <td><span th:text="${product.pack}"></span></td>
-                    <td><span th:text="${product.getProbes().get(0).regularPrice}">price</span></td>
-                    <td><span th:text="${product.probes}">WholeSale</span></td>
-                    <td><span th:text="${product.getProbes().get(0).leftPct}">Left</span></td>
+                <tr th:each="product : ${products}"
+                    th:object="${product}"
+                    th:with="lastProbe=*{probes.get(__${product.probes.size()==0 ? 0 : product.probes.size() - 1}__)}">
+                    <th scope="row"><span th:text="*{metroId}">id</span></th>
+                    <td><span th:text="*{name}">name</span></td>
+                    <td><span th:text="*{pack}"></span></td>
+                    <td><span th:text="${#numbers.formatDecimal(__${lastProbe.regularPrice}__,0,2)}">price</span></td>
+                    <td><span th:text="${lastProbe.wholesalePrice}">WholeSale</span></td>
+                    <td><span th:text="${lastProbe.leftPct}">Left</span></td>
                     <td><a class="btn btn-dark" th:text="Link"
-                        th:href="${host} + ${product.url}"></a></td>
+                               th:href="${host} + *{url}"></a></td>
                 </tr>
             </tbody>
         </table>
@@ -31,7 +33,7 @@
             <!--</tr>-->
 
         <div class="container">
-            <form action="#" th:action="@{/metro-assistant}" th:method="post">
+            <form action="#" th:action="@{/}" th:method="post">
                 <div class="form-group">
                     <label for="inputUrl">Product URL</label>
                     <input th:name="productUrl" type="text"

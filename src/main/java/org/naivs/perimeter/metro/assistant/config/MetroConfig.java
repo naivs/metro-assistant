@@ -11,6 +11,6 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "metro")
 public class MetroConfig {
 
-    private Long pollInterval = 1000L * 60 * 60; // one hour
+    private Long pollInterval;
     private String baseUrl = "http://localhost:8080";
 }

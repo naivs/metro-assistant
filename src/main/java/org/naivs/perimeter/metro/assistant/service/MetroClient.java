@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,22 +30,24 @@ public class MetroClient {
     }
 
     public MetroProduct getItem(String itemUrl) {
+        log.info("updating Product: " + itemUrl);
         try {
             ResponseEntity<MetroProduct> response = restTemplate.getForEntity(
                     new URI(metroConfig.getBaseUrl()).resolve(itemUrl),
                     MetroProduct.class);
             if (response.getStatusCode().equals(HttpStatus.OK)) {
+                log.info("updating Product response: [OK]");
                 return response.getBody();
             } else {
-                String msg = String.format("Response code: %s\n" +
-                        "Response body:%s", response.getStatusCode(), response.getBody());
-                log.error(msg);
-                throw new RuntimeException(msg);
+                log.error("updating Product response: [FAIL]");
+                throw new RuntimeException(
+                        String.format("Response code: %s\n" +
+                                "Response body:%s", response.getStatusCode(), response.getBody())
+                );
             }
-        } catch (Exception e) {
-            String msg = String.format("Item \"%s\" has been not obtained.", itemUrl);
-            log.error(msg, e);
-            throw new RuntimeException(msg, e);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(
+                    String.format("Item \"%s\" has been not obtained.", itemUrl), e);
         }
     }
 }

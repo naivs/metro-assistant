@@ -1,6 +1,7 @@
 package org.naivs.perimeter.metro.assistant.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.naivs.perimeter.metro.assistant.data.entity.ProductEntity;
 import org.naivs.perimeter.metro.assistant.data.entity.ProductProbeEntity;
 import org.naivs.perimeter.metro.assistant.data.repo.ProductRepository;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ProductService {
@@ -20,24 +22,29 @@ public class ProductService {
         ProductEntity product = new ProductEntity();
         product.setUrl(productUrl);
 
-        probe(product);
-
-        return productRepository.saveAndFlush(product);
+        return probe(product) ? productRepository.saveAndFlush(product) : null;
     }
 
     public List<ProductEntity> getProducts() {
         return productRepository.findAll();
     }
 
-    public void probe(ProductEntity product) {
-        MetroProduct metroProduct = metroClient.getItem(
-                product.getUrl()
-        );
+    public boolean probe(ProductEntity product) {
+        try {
+            MetroProduct metroProduct = metroClient.getItem(
+                    product.getUrl()
+            );
 
-        product.setMetroId(metroProduct.getId());
-        product.setName(metroProduct.getName());
-        product.setPack(metroProduct.getMe());
-        product.getProbes().add(extractProbe(metroProduct));
+            product.setMetroId(metroProduct.getId());
+            product.setName(metroProduct.getName());
+            product.setPack(metroProduct.getMe());
+            product.getProbes().add(extractProbe(metroProduct));
+
+            return true;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return false;
+        }
     }
 
     public void saveOrUpdateAll(List<ProductEntity> products) {

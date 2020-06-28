@@ -7,6 +7,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+metro:
+  poll-interval: 3600000
+#  base-url: https://nn.metro-cc.ru
+debug: true
 ---
 spring:
   profiles: core
@@ -14,5 +18,10 @@ spring:
     url: jdbc:postgresql://192.168.0.2:5433/metro-assistant
     username: postgres
     password: 123
+  jpa:
+    hibernate:
+      ddl-auto: update
 metro:
+  poll-interval: 3600000
   base-url: https://nn.metro-cc.ru
+debug: true
