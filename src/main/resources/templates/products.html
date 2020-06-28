@@ -1,34 +1,47 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
-
-    <table>
-        <thead>
-            <tr>
-                <th> Id </th>
-                <th> Name </th>
-                <th> Regular Price </th>
-                <th> ME </th>
-                <th> Wholesale prices </th>
-                <th> Left PCT </th>
-            </tr>
-        </thead>
-        <tbody>
+    <div th:fragment="products">
+        <table class="table">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Package</th>
+                    <th scope="col">Regular Price</th>
+                    <th scope="col">Wholesale Price</th>
+                    <th scope="col">Left pct</th>
+                    <th scope="col">Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="product : ${products}"
+                    th:object="${product}"
+                    th:with="lastProbe=*{probes.get(__${product.probes.size()==0 ? 0 : product.probes.size() - 1}__)}">
+                    <th scope="row"><span th:text="*{metroId}">id</span></th>
+                    <td><span th:text="*{name}">name</span></td>
+                    <td><span th:text="*{pack}"></span></td>
+                    <td><span th:text="${#numbers.formatDecimal(__${lastProbe.regularPrice}__,0,2)}">price</span></td>
+                    <td><span th:text="${lastProbe.wholesalePrice}">WholeSale</span></td>
+                    <td><span th:text="${lastProbe.leftPct}">Left</span></td>
+                    <td><a class="btn btn-dark" th:text="Link"
+                               th:href="${host} + *{url}"></a></td>
+                </tr>
+            </tbody>
+        </table>
             <!--<tr th:if="${products}">-->
-                <!--<td colspan="2"> No Metro Products Available </td>-->
+            <!--<td colspan="2"> No Metro Products Available </td>-->
             <!--</tr>-->
-            <tr th:each="product : ${products}">
-                <td><span th:text="${product.id}"> Id </span></td>
-                <td><span th:text="${product.name}"> Name </span></td>
-                <td><span th:text="${product.regularPrice}"> price </span></td>
-                <td><span th:text="${product.me}"> ME </span></td>
-                <td><span th:text="${product.wholesalePrice}"> WholeSale </span></td>
-                <td><span th:text="${product.leftPct}"> Left </span></td>
-            </tr>
-        </tbody>
-    </table>
-    <!--<input value="Add" type="button" onclick="location.href='/metro-assistant/add'" />-->
-    <form action="#" th:action="@{/metro-assistant}" th:method="post">
-        <input type="text" th:name="productUrl">
-        <input type="submit" name="Add">
-    </form>
+
+        <div class="container">
+            <form action="#" th:action="@{/}" th:method="post">
+                <div class="form-group">
+                    <label for="inputUrl">Product URL</label>
+                    <input th:name="productUrl" type="text"
+                           class="form-control" id="inputUrl" aria-describedby="urlHelp">
+                    <small id="urlHelp" class="form-text text-muted">Use URL without host.</small>
+                </div>
+                <button type="submit" class="btn btn-primary">Add</button>
+            </form>
+        </div>
+    </div>
 </html>

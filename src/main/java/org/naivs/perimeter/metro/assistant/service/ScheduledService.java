@@ -1,40 +1,38 @@
 package org.naivs.perimeter.metro.assistant.service;
 
 import lombok.RequiredArgsConstructor;
-import org.naivs.perimeter.metro.assistant.model.MetroProduct;
+import lombok.extern.slf4j.Slf4j;
+import org.naivs.perimeter.metro.assistant.data.entity.ProductEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ScheduledService {
 
-    private final HttpClient httpClient;
-
-    private final Map<String, MetroProduct> products = new HashMap<>();
+    private final ProductService productService;
 
     @Scheduled(initialDelay = 1000 * 10,
-            fixedRate = 1000 * 60 * 60) // once per hour
+            fixedDelayString = "${metro.poll-interval}")
     public void performUpdate() {
-        products.keySet()
-                .forEach(key -> {
-                    MetroProduct item = httpClient.getItem(key);
-                    products.replace(key, item);
-                });
-    }
+        long start = System.currentTimeMillis();
+        log.info("product update procedure started..");
 
-    public List<MetroProduct> getProducts() {
-        return new ArrayList<>(products.values());
-    }
+        log.info("product polling started..");
+        List<ProductEntity> updatedProducts = productService.getProducts()
+                .stream()
+                .filter(productService::probe)
+                .collect(Collectors.toList());
+        log.info("product polling finished..");
+        log.info("product saving..");
+        productService.saveOrUpdateAll(updatedProducts);
 
-    public void addProduct(MetroProduct product) {
-        products.put(product.getUrl(), product);
-        MetroProduct item = httpClient.getItem(product.getUrl());
-        products.replace(product.getUrl(), item);
+        log.info(String.format(
+                "product update procedure finished.. (at %f sec.)",
+                (System.currentTimeMillis() - start) / 1000F));
     }
 }
