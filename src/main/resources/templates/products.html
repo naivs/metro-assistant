@@ -32,7 +32,10 @@
                         <tr>
                             <th scope="row"><span>Price Chart</span></th>
                             <td colspan="7">
-                                <div th:include="fragments/price-chart :: price-chart(*{'prod_' + metroId})">priceChart</div>
+                                <div th:include="fragments/price-chart :: price-chart(*{'prod_' + metroId},
+                                                                            ${@productService.getPriceHistory(__*{id}__)})">
+                                    priceChart
+                                </div>
                             </td>
                         </tr>
                     </th:block>

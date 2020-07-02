@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.naivs.perimeter.metro.assistant.component.MetroProductMessageConverter;
 import org.naivs.perimeter.metro.assistant.config.MetroConfig;
-import org.naivs.perimeter.metro.assistant.model.MetroProduct;
+import org.naivs.perimeter.metro.assistant.data.model.MetroProduct;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

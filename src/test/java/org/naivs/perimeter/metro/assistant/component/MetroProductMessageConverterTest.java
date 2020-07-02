@@ -2,7 +2,7 @@ package org.naivs.perimeter.metro.assistant.component;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.naivs.perimeter.metro.assistant.model.MetroProduct;
+import org.naivs.perimeter.metro.assistant.data.model.MetroProduct;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.mock.http.MockHttpInputMessage;
 
@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 

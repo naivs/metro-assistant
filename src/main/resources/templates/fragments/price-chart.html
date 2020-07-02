@@ -1,42 +1,66 @@
 <html xmlns:th="http://www.thymeleaf.org">
-<div th:fragment="price-chart (id)">
-    <script type="text/javascript" th:inline="javascript">
-        google.charts.setOnLoadCallback(drawBackgroundColor);
+<div class="container" th:fragment="price-chart (metroId, history)">
+    <div class="row">
+        <script type="text/javascript" th:inline="javascript">
+            google.charts.setOnLoadCallback(drawBackgroundColor);
 
-        function drawBackgroundColor() {
-            var data = new google.visualization.DataTable();
-            data.addColumn('number', 'X');
-            data.addColumn('number', 'Dogs');
+            function drawBackgroundColor() {
+                var chart = new google.visualization.LineChart(document.getElementById(/*[[${metroId}]]*/));
 
-            data.addRows([
-                [0, 0],   [1, 10],  [2, 23],  [3, 17],  [4, 18],  [5, 9],
-                [6, 11],  [7, 27],  [8, 33],  [9, 40],  [10, 32], [11, 35],
-                [12, 30], [13, 40], [14, 42], [15, 47], [16, 44], [17, 48],
-                [18, 52], [19, 54], [20, 42], [21, 55], [22, 56], [23, 57],
-                [24, 60], [25, 50], [26, 52], [27, 51], [28, 49], [29, 53],
-                [30, 55], [31, 60], [32, 61], [33, 59], [34, 62], [35, 65],
-                [36, 62], [37, 58], [38, 55], [39, 61], [40, 64], [41, 65],
-                [42, 63], [43, 66], [44, 67], [45, 69], [46, 69], [47, 70],
-                [48, 72], [49, 68], [50, 66], [51, 65], [52, 67], [53, 70],
-                [54, 71], [55, 72], [56, 73], [57, 75], [58, 70], [59, 68],
-                [60, 64], [61, 60], [62, 65], [63, 67], [64, 68], [65, 69],
-                [66, 70], [67, 72], [68, 75], [69, 80]
-            ]);
+                var cols = [{'id': 'X', 'label': 'Date', 'type': 'date'}];
+                var colsData = /*[[${history.columns}]]*/ [];
+                colsData.forEach(function(col) {
+                    cols.push({'id': col, 'label': col, 'type': 'number'});
+                });
 
-            var options = {
-                hAxis: {
-                    title: 'Time'
-                },
-                vAxis: {
-                    title: 'Popularity'
-                },
-                backgroundColor: '#f1f8e9'
-            };
+                var rows = [];
+                var rowsData = /*[[${history.rows}]]*/ [];
+                Object.keys(rowsData).forEach(function(date) {
+                    var c = [];
+                    var rowValues = rowsData[date];
+                    console.log('dateKey: ' + date);
+                    c.push({v: new Date(date)});
 
-            var chart = new google.visualization.LineChart(document.getElementById(/*[[${id}]]*/));
-            chart.draw(data, options);
-        }
-    </script>
-    <div th:id="${id}"></div>
+                    rowValues.forEach(function (val) {
+                        c.push({v: val});
+                    });
+
+                    rows.push({'c': c});
+                });
+
+                var initData = new google.visualization.DataTable({
+                    'cols': cols,
+                    'rows': rows
+                });
+
+                var initOptions = {
+                    hAxis: {
+                        title: 'Date'
+                    },
+                    vAxis: {
+                        title: 'Price'
+                    },
+                    backgroundColor: '#f1f8e9'
+                };
+
+                chart.draw(initData, initOptions);
+            }
+        </script>
+        <div class="col">
+            <div th:id="${metroId}"></div>
+        </div>
+        <div class="col-md-auto">
+            <div class=" btn-group-vertical">
+                <button type="button" class="btn btn-secondary">Week</button>
+                <button type="button" class="btn btn-secondary">Month</button>
+                <button type="button" class="btn btn-secondary">Quarter</button>
+                <button type="button" class="btn btn-secondary">Year</button>
+            </div>
+        </div>
+    </div>
+    <!--<div th:text="${@productService.getPriceHistory(-->
+            <!--__${id}__,-->
+            <!--T(org.naivs.perimeter.metro.assistant.data.enums.HistoryRange).MONTH)-->
+        <!--}">...</div>-->
 </div>
 </html>
