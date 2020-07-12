@@ -7,9 +7,9 @@ import org.naivs.perimeter.metro.assistant.data.entity.ProductProbeEntity;
 import org.naivs.perimeter.metro.assistant.data.enums.HistoryRange;
 import org.naivs.perimeter.metro.assistant.data.model.PriceHistoryModel;
 import org.naivs.perimeter.metro.assistant.data.repo.ProductRepository;
-import org.naivs.perimeter.metro.assistant.data.model.MetroProduct;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -22,8 +22,8 @@ import static java.util.Optional.ofNullable;
 @Service
 public class ProductService {
 
-    private final MetroClient metroClient;
     private final ProductRepository productRepository;
+    private final ProbeStrategy probeStrategy;
 
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter
             .ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -32,7 +32,7 @@ public class ProductService {
         ProductEntity product = new ProductEntity();
         product.setUrl(productUrl);
 
-        return probe(product) ? productRepository.saveAndFlush(product) : null;
+        return probeStrategy.probe(product) ? productRepository.saveAndFlush(product) : null;
     }
 
     public List<ProductEntity> getProducts() {
@@ -86,36 +86,19 @@ public class ProductService {
                         ProductProbeEntity::getRegularPrice))).orElse(new HashMap<>());
     }
 
-    public boolean probe(ProductEntity product) {
-        try {
-            MetroProduct metroProduct = metroClient.getItem(
-                    product.getUrl()
-            );
-
-            product.setMetroId(metroProduct.getId());
-            product.setName(metroProduct.getName());
-            product.setPack(metroProduct.getMe());
-            product.getProbes().add(extractProbe(metroProduct));
-
-            return true;
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return false;
-        }
-    }
-
     public void saveOrUpdateAll(List<ProductEntity> products) {
         productRepository.saveAll(products);
     }
 
-    private ProductProbeEntity extractProbe(MetroProduct metroProduct) {
-        ProductProbeEntity probe = new ProductProbeEntity();
-        probe.setRegularPrice(metroProduct.getRegularPrice());
-        probe.setLeftPct(metroProduct.getLeftPct());
+    public void pollProduct(Long productId) {
+        ProductEntity product = productRepository.findById(productId).orElseThrow(() ->
+                new EntityNotFoundException("Product not found with id: " + productId));
 
-        metroProduct.getWholesalePrice()
-                .forEach((key, value) -> probe.getWholesalePrice().put(key, value));
+        probeStrategy.probe(product);
+        productRepository.save(product);
+    }
 
-        return probe;
+    public void delete(Long id) {
+        productRepository.deleteById(id);
     }
 }

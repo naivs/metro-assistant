@@ -17,7 +17,7 @@ class MetroProductMessageConverterTest {
 
     private MetroProductMessageConverter converter = new MetroProductMessageConverter();
 
-    private static final MetroProduct[] TEST_PRODUCTS = new MetroProduct[2];
+    private static final MetroProduct[] TEST_PRODUCTS = new MetroProduct[3];
 
     @BeforeAll
     static void setUp() {
@@ -42,6 +42,18 @@ class MetroProductMessageConverterTest {
                 new HashMap<>(),
                 10
         );
+
+        // weight product
+        TEST_PRODUCTS[2] = new MetroProduct(
+                375747L,
+                "Картофель (сетка 5кг)",
+                "example-weight-product.html",
+                "5 кг х 39.90 \u20BD",
+                189.53f,
+                new HashMap<>(),
+                100
+        );
+        TEST_PRODUCTS[2].getWholesalePrice().put(3, 85.97f);
     }
 
     @Test

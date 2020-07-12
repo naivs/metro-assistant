@@ -1,5 +1,5 @@
 <html xmlns:th="http://www.thymeleaf.org">
-<div class="container" th:fragment="price-chart (metroId, history)">
+<div class="container" th:fragment="price-chart (id, metroId, history)">
     <div class="row">
         <script type="text/javascript" th:inline="javascript">
             google.charts.setOnLoadCallback(drawBackgroundColor);
@@ -51,10 +51,8 @@
         </div>
         <div class="col-md-auto">
             <div class=" btn-group-vertical">
-                <button type="button" class="btn btn-secondary">Week</button>
-                <button type="button" class="btn btn-secondary">Month</button>
-                <button type="button" class="btn btn-secondary">Quarter</button>
-                <button type="button" class="btn btn-secondary">Year</button>
+                <a th:href="@{/delete/__${id}__}" class="btn btn-danger">Delete</a>
+                <a th:href="@{/poll/__${id}__}" class="btn btn-secondary">Update</a>
             </div>
         </div>
     </div>
