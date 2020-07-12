@@ -1,4 +1,4 @@
-package org.naivs.perimeter.metro.assistant.model;
+package org.naivs.perimeter.metro.assistant.data.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

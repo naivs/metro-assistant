@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 public class ScheduledService {
 
     private final ProductService productService;
+    private final ProbeStrategy probeStrategy;
 
     @Scheduled(initialDelay = 1000 * 10,
             fixedDelayString = "${metro.poll-interval}")
@@ -25,7 +26,7 @@ public class ScheduledService {
         log.info("product polling started..");
         List<ProductEntity> updatedProducts = productService.getProducts()
                 .stream()
-                .filter(productService::probe)
+                .filter(probeStrategy::probe)
                 .collect(Collectors.toList());
         log.info("product polling finished..");
         log.info("product saving..");

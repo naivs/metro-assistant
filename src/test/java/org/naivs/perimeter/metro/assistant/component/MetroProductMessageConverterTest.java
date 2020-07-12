@@ -2,7 +2,7 @@ package org.naivs.perimeter.metro.assistant.component;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.naivs.perimeter.metro.assistant.model.MetroProduct;
+import org.naivs.perimeter.metro.assistant.data.model.MetroProduct;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.mock.http.MockHttpInputMessage;
 
@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,7 +17,7 @@ class MetroProductMessageConverterTest {
 
     private MetroProductMessageConverter converter = new MetroProductMessageConverter();
 
-    private static final MetroProduct[] TEST_PRODUCTS = new MetroProduct[2];
+    private static final MetroProduct[] TEST_PRODUCTS = new MetroProduct[3];
 
     @BeforeAll
     static void setUp() {
@@ -43,6 +42,18 @@ class MetroProductMessageConverterTest {
                 new HashMap<>(),
                 10
         );
+
+        // weight product
+        TEST_PRODUCTS[2] = new MetroProduct(
+                375747L,
+                "Картофель (сетка 5кг)",
+                "example-weight-product.html",
+                "5 кг х 39.90 \u20BD",
+                189.53f,
+                new HashMap<>(),
+                100
+        );
+        TEST_PRODUCTS[2].getWholesalePrice().put(3, 85.97f);
     }
 
     @Test

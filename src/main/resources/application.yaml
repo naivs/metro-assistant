@@ -10,6 +10,8 @@ spring:
 metro:
   poll-interval: 3600000
 #  base-url: https://nn.metro-cc.ru
+#  api-host: https://api.metro-cc.ru
+#  api-base-url: api/v1/C98BB1B547ECCC17D8AEBEC7116D6/21
 debug: true
 ---
 spring:
@@ -24,4 +26,6 @@ spring:
 metro:
   poll-interval: 3600000
   base-url: https://nn.metro-cc.ru
+  api-host: https://api.metro-cc.ru
+  api-base-url: api/v1/C98BB1B547ECCC17D8AEBEC7116D6/21
 debug: true

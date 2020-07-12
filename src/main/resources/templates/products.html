@@ -1,36 +1,51 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
     <div th:fragment="products">
-        <table class="table">
-            <thead class="thead-dark">
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Package</th>
-                    <th scope="col">Regular Price</th>
-                    <th scope="col">Wholesale Price</th>
-                    <th scope="col">Left pct</th>
-                    <th scope="col">Link</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="product : ${products}"
-                    th:object="${product}"
-                    th:with="lastProbe=*{probes.get(__${product.probes.size()==0 ? 0 : product.probes.size() - 1}__)}">
-                    <th scope="row"><span th:text="*{metroId}">id</span></th>
-                    <td><span th:text="*{name}">name</span></td>
-                    <td><span th:text="*{pack}"></span></td>
-                    <td><span th:text="${#numbers.formatDecimal(__${lastProbe.regularPrice}__,0,2)}">price</span></td>
-                    <td><span th:text="${lastProbe.wholesalePrice}">WholeSale</span></td>
-                    <td><span th:text="${lastProbe.leftPct}">Left</span></td>
-                    <td><a class="btn btn-dark" th:text="Link"
-                               th:href="${host} + *{url}"></a></td>
-                </tr>
-            </tbody>
-        </table>
+
+        <div class="table-responsive-md">
+            <table class="table table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Package</th>
+                        <th scope="col">Regular Price</th>
+                        <th scope="col">Wholesale Price</th>
+                        <th scope="col">Left pct</th>
+                        <th scope="col">Link</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <th:block th:each="product : ${products}"
+                              th:object="${product}"
+                              th:with="lastProbe=*{probes.get(__${product.probes.size()==0 ? 0 : product.probes.size() - 1}__)}">
+                        <tr>
+                            <th scope="row"><span th:text="*{metroId}">id</span></th>
+                            <td><span th:text="*{name}">name</span></td>
+                            <td><span th:text="*{pack}">pack</span></td>
+                            <td><span th:text="${#numbers.formatDecimal(__${lastProbe.regularPrice}__,0,2)}">price</span></td>
+                            <td><span th:text="${lastProbe.wholesalePrice}">wholeSale</span></td>
+                            <td><span th:text="${lastProbe.leftPct}">left</span></td>
+                            <td><a class="btn btn-dark" th:text="Link"
+                                   th:href="${host} + *{url}"></a></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><span>Price Chart</span></th>
+                            <td colspan="7">
+                                <div th:include="fragments/price-chart :: price-chart(*{id},
+                                                                            *{'prod_' + metroId},
+                                                                            ${@productService.getPriceHistory(__*{id}__)})">
+                                    priceChart
+                                </div>
+                            </td>
+                        </tr>
+                    </th:block>
+                </tbody>
+            </table>
             <!--<tr th:if="${products}">-->
             <!--<td colspan="2"> No Metro Products Available </td>-->
             <!--</tr>-->
+        </div>
 
         <div class="container">
             <form action="#" th:action="@{/}" th:method="post">

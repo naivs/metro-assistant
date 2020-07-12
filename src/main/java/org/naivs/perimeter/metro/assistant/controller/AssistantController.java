@@ -6,10 +6,7 @@ import org.naivs.perimeter.metro.assistant.data.entity.ProductEntity;
 import org.naivs.perimeter.metro.assistant.service.ProductService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -32,6 +29,18 @@ public class AssistantController {
     @PostMapping
     public String addProduct(@RequestParam String productUrl) {
         productService.addProduct(productUrl);
+        return "redirect:/";
+    }
+
+    @GetMapping("/poll/{productId}")
+    public String pollProduct(@PathVariable("productId") Long productId) {
+        productService.pollProduct(productId);
+        return "redirect:/";
+    }
+
+    @GetMapping("/delete/{productId}")
+    public String deleteProduct(@PathVariable("productId") Long productId) {
+        productService.delete(productId);
         return "redirect:/";
     }
 }
