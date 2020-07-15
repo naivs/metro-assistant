@@ -1,4 +1,4 @@
-package org.naivs.perimeter.metro.assistant.service;
+package org.naivs.perimeter.metro.assistant.http;
 
 import org.naivs.perimeter.metro.assistant.data.entity.ProductEntity;
 
