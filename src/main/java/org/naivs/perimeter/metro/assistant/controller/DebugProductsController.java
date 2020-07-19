@@ -1,6 +1,9 @@
 package org.naivs.perimeter.metro.assistant.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import org.naivs.perimeter.metro.assistant.data.entity.ProductEntity;
+import org.naivs.perimeter.metro.assistant.data.repo.ProductRepository;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -11,9 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("api")
 public class DebugProductsController {
+
+    private final ProductRepository productRepository;
 
     @GetMapping(value = "products", produces = MediaType.APPLICATION_JSON_VALUE)
     public Object getProduct(
@@ -30,5 +36,11 @@ public class DebugProductsController {
         }
 
         return null;
+    }
+
+    @GetMapping(value = "products/all", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ProductEntity getProduct() {
+        ProductEntity productEntity = productRepository.findAll().get(0);
+        return productEntity;
     }
 }

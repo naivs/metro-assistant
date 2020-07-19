@@ -2,7 +2,14 @@ package org.naivs.perimeter.metro.assistant.data.entity;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
+import javax.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +19,7 @@ import java.util.List;
 public class ProductEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 
     @Column(nullable = false, unique = true)
@@ -26,7 +33,7 @@ public class ProductEntity {
 
     private String pack;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "productId", nullable = false)
+    @OrderBy("timestamp ASC")
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<ProductProbeEntity> probes = new ArrayList<>();
 }

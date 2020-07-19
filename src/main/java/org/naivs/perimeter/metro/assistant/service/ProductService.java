@@ -6,7 +6,9 @@ import org.naivs.perimeter.metro.assistant.data.entity.ProductEntity;
 import org.naivs.perimeter.metro.assistant.data.entity.ProductProbeEntity;
 import org.naivs.perimeter.metro.assistant.data.enums.HistoryRange;
 import org.naivs.perimeter.metro.assistant.data.model.PriceHistoryModel;
+import org.naivs.perimeter.metro.assistant.data.repo.ProductProbeRepository;
 import org.naivs.perimeter.metro.assistant.data.repo.ProductRepository;
+import org.naivs.perimeter.metro.assistant.http.ProbeStrategy;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -23,6 +25,7 @@ import static java.util.Optional.ofNullable;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductProbeRepository productProbeRepository;
     private final ProbeStrategy probeStrategy;
 
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter
@@ -40,50 +43,26 @@ public class ProductService {
     }
 
     public PriceHistoryModel getPriceHistory(Long productId) {
-        ProductEntity product = productRepository
-                .findByProductIdAndProbesAfter(productId, HistoryRange.MONTH.get())
+        ProductEntity product = productRepository.findById(productId)
                 .orElseThrow(() ->
                         new RuntimeException("Product not found with \"id\"=" + productId));
+        List<ProductProbeEntity> probes = productProbeRepository
+                .findByProductIdAndProbesAfter(productId, HistoryRange.QUARTER.get());
+        product.setProbes(probes);
 
-        Map<LocalDateTime, Map<Integer, Float>> prices = product.getProbes().stream()
-                .collect(Collectors.toMap(ProductProbeEntity::getTimestamp,
-                        productProbeEntity -> {
-                            Map<Integer, Float> pricesMap = productProbeEntity.getWholesalePrice();
-                            pricesMap.put(1, productProbeEntity.getRegularPrice());
-                            return pricesMap;
-                        }));
+        Map<LocalDateTime, Map<Integer, Float>> prices = getPrices(probes);
+
+        // get columns
+        List<String> columns = probesToChartColumns(prices);
+
+        // get rows
+        Map<String, List<Float>> rows = probesToChartRows(prices, columns);
 
         PriceHistoryModel priceHistory = new PriceHistoryModel();
-//        priceHistory.getColumns().add("reg");
-        // find prices date with max offers (needs to be sorted)
-        Set<Integer> priceFields = prices.entrySet().stream()
-                .max(Comparator.comparingInt(ws -> ws.getValue().size()))
-                .map(e -> new TreeSet<>(e.getValue().keySet()))
-                .orElse(new TreeSet<>());
+        priceHistory.setColumns(columns);
+        priceHistory.setRows(rows);
 
-        priceFields.forEach(pf -> priceHistory.getColumns().add(String.valueOf(pf)));
-
-        Map<String, List<Float>> rows = priceHistory.getRows();
-        prices.keySet()
-                .forEach(key -> {
-                    List<Float> priceValues = new ArrayList<>();
-                    Map<Integer, Float> integerFloatMap = prices.get(key);
-                    priceFields.forEach(pf -> priceValues.add(
-                            ofNullable(integerFloatMap.get(pf)).orElse(0.0F)
-                    ));
-                    rows.put(dateFormatter.format(key), priceValues);
-                });
         return priceHistory;
-    }
-
-    public Map<String, Float> getPriceHistory(Long productId, HistoryRange range) {
-        LocalDateTime queryDate = range.get();
-        return productRepository
-                .findByProductIdAndProbesAfter(productId, queryDate)
-        .map(product -> product.getProbes().stream()
-                .collect(Collectors.toMap(
-                        productProbeEntity -> dateFormatter.format(productProbeEntity.getTimestamp()),
-                        ProductProbeEntity::getRegularPrice))).orElse(new HashMap<>());
     }
 
     public void saveOrUpdateAll(List<ProductEntity> products) {
@@ -100,5 +79,52 @@ public class ProductService {
 
     public void delete(Long id) {
         productRepository.deleteById(id);
+    }
+
+    /**
+     * Convert {@link Map<LocalDateTime, Map<Integer, Float>>} to {@link List<String>} chart column names.
+     * @param prices mapped prices
+     * @return Chart column names
+     */
+    private List<String> probesToChartColumns(Map<LocalDateTime, Map<Integer, Float>> prices) {
+        return prices.values()
+                .stream()
+                .flatMap(wp -> wp.keySet().stream())
+                .sorted()
+                .distinct()
+                .map(String::valueOf)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Convert {@link Map<LocalDateTime, Map<Integer, Float>>} to chart rows.
+     * @param prices mapped prices
+     * @return map as timestamp to list of prices which ordered
+     * in order to column names. (Dates ordered)
+     */
+    private Map<String, List<Float>> probesToChartRows(Map<LocalDateTime, Map<Integer, Float>> prices,
+                                                       List<String> columns
+    ) {
+        Map<String, List<Float>> result = new TreeMap<>();
+
+        prices.keySet().forEach(key -> {
+            Map<Integer, Float> integerFloatMap = prices.get(key);
+            List<Float> priceValues = columns.stream()
+                    .map(Integer::parseInt)
+                    .map(pf -> ofNullable(integerFloatMap.get(pf)).orElse(0.0F))
+                    .collect(Collectors.toList());
+            result.put(dateFormatter.format(key), priceValues);
+        });
+        return result;
+    }
+
+    private Map<LocalDateTime, Map<Integer, Float>> getPrices(List<ProductProbeEntity> probes) {
+        return probes.stream()
+                .collect(Collectors.toMap(ProductProbeEntity::getTimestamp,
+                        productProbeEntity -> {
+                            Map<Integer, Float> pricesMap = productProbeEntity.getWholesalePrice();
+                            pricesMap.put(1, productProbeEntity.getRegularPrice());
+                            return pricesMap;
+                        }));
     }
 }

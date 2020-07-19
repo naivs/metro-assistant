@@ -8,7 +8,7 @@ spring:
     hibernate:
       ddl-auto: update
 metro:
-  poll-interval: 3600000
+  poll-interval: 21600000 # 4 times a day
 #  base-url: https://nn.metro-cc.ru
 #  api-host: https://api.metro-cc.ru
 #  api-base-url: api/v1/C98BB1B547ECCC17D8AEBEC7116D6/21
@@ -24,7 +24,7 @@ spring:
     hibernate:
       ddl-auto: update
 metro:
-  poll-interval: 3600000
+  poll-interval: 21600000 # 4 times a day
   base-url: https://nn.metro-cc.ru
   api-host: https://api.metro-cc.ru
   api-base-url: api/v1/C98BB1B547ECCC17D8AEBEC7116D6/21

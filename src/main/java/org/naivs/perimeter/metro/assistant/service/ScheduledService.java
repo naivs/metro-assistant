@@ -3,6 +3,7 @@ package org.naivs.perimeter.metro.assistant.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.naivs.perimeter.metro.assistant.data.entity.ProductEntity;
+import org.naivs.perimeter.metro.assistant.http.ProbeStrategy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ public class ScheduledService {
 
     @Scheduled(initialDelay = 1000 * 10,
             fixedDelayString = "${metro.poll-interval}")
+    // TODO: MILLIS ARITHMETIC LEAVE HERE (set in properties minutes or hours only)
     public void performUpdate() {
         long start = System.currentTimeMillis();
         log.info("product update procedure started..");
