@@ -31,6 +31,7 @@ public class JsonStrategy implements ProbeStrategy {
             product.setPack(rawProduct.getPacking().toString());
 
             ProductProbeEntity productProbeEntity = new ProductProbeEntity();
+            productProbeEntity.setProduct(product);
             productProbeEntity.setLeftPct(rawProduct.getStock().getText().getPct());
             productProbeEntity.setRegularPrice(rawProduct.getPrices().getPrice());
             productProbeEntity.setTimestamp(LocalDateTime.now(ZoneId.of("+3")));
