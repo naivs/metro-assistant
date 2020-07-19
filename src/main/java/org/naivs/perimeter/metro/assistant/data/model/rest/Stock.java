@@ -8,10 +8,11 @@ import lombok.Getter;
 public class Stock {
 
     public enum Status {
+        OUT("Отсутствует", 0),
         ENDS("Заканчивается", 25),
-        FEW("Мало", 50),
-        ENOUGH("Достаточно", 75),
-        LOT("Много", 100);
+        FEW("Товара мало", 50),
+        ENOUGH("Товара достаточно", 75),
+        LOT("Товара много", 100);
 
         private String text;
         @Getter
