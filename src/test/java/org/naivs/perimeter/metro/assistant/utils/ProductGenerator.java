@@ -1,12 +1,11 @@
-package org.naivs.perimeter.metro.assistant.generator;
+package org.naivs.perimeter.metro.assistant.utils;
 
 import com.sun.istack.Nullable;
 import org.naivs.perimeter.metro.assistant.data.entity.ProductEntity;
 import org.naivs.perimeter.metro.assistant.data.entity.ProductProbeEntity;
 
-import java.time.Clock;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -26,10 +25,9 @@ public class ProductGenerator {
         return new ArrayList<>(products);
     }
 
-    public static List<ProductProbeEntity> generateProbes(
-            int count,
-            @Nullable ProductEntity product,
-            boolean withId
+    public static List<ProductProbeEntity> generateProbes(int count,
+                                                          @Nullable ProductEntity product,
+                                                          boolean withId
     ) {
         Set<ProductProbeEntity> probes = new HashSet<>();
         for (int i = 0; i < count; i++) {
@@ -52,14 +50,12 @@ public class ProductGenerator {
         return product;
     }
 
-    private static ProductProbeEntity getProbe(
-            @Nullable ProductEntity product,
-            boolean withId
+    private static ProductProbeEntity getProbe(@Nullable ProductEntity product,
+                                               boolean withId
     ) {
         ProductProbeEntity probe = new ProductProbeEntity();
         probe.setId(withId ? (long) random.nextInt(10000) + 1 : null);
-        probe.setTimestamp(LocalDateTime.now(Clock.system(ZoneId.of("+3")))
-                .minusHours((long) random.nextInt(10000 - 1) + 1));
+        probe.setTimestamp(randomDateTime(null));
         ofNullable(product).ifPresent(probe::setProduct);
         probe.setLeftPct(random.nextInt(100));
         probe.setRegularPrice((float)(random.nextInt(1000) + 1) + random.nextFloat());
@@ -72,5 +68,23 @@ public class ProductGenerator {
                     probe.getRegularPrice() + random.nextInt(50));
         }
         return probe;
+    }
+
+    private static LocalDateTime randomDateTime(@Nullable Set<LocalDateTime> uniqueScope) {
+        LocalDateTime randomDateTime;
+
+        do {
+            long minDay = LocalDateTime
+                    .of(1970, 1, 1, 1, 1, 1)
+                    .toEpochSecond(ZoneOffset.UTC);
+            long maxDay = LocalDateTime
+                    .of(2020, 3, 31, 23, 59, 59)
+                    .toEpochSecond(ZoneOffset.UTC);
+            long randomDay = ThreadLocalRandom.current().nextLong(minDay, maxDay);
+            randomDateTime = LocalDateTime
+                    .ofEpochSecond(randomDay, 0, ZoneOffset.UTC);
+        } while (uniqueScope != null && uniqueScope.contains(randomDateTime));
+
+        return randomDateTime;
     }
 }

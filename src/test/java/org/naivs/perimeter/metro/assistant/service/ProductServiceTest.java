@@ -1,5 +1,7 @@
 package org.naivs.perimeter.metro.assistant.service;
 
+import jdk.nashorn.internal.ir.annotations.Ignore;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -9,7 +11,7 @@ import org.naivs.perimeter.metro.assistant.data.entity.ProductProbeEntity;
 import org.naivs.perimeter.metro.assistant.data.model.PriceHistoryModel;
 import org.naivs.perimeter.metro.assistant.data.repo.ProductProbeRepository;
 import org.naivs.perimeter.metro.assistant.data.repo.ProductRepository;
-import org.naivs.perimeter.metro.assistant.generator.ProductGenerator;
+import org.naivs.perimeter.metro.assistant.utils.ProductGenerator;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -34,6 +36,71 @@ class ProductServiceTest {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
             .ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    private ProductEntity productEntity;
+    private List<ProductProbeEntity> probes;
+
+    @BeforeEach
+    private void fixtureSettings() {
+        productEntity = ProductGenerator
+                .generateProducts(1, true)
+                .get(0);
+        probes = ProductGenerator
+                .generateProbes(10, productEntity, true);
+        productEntity.setProbes(probes);
+    }
+
+    @Test
+    void columnNamesSortedInModel() {
+        when(productRepository.findById(eq(productEntity.getId())))
+                .thenReturn(Optional.of(productEntity));
+        when(productProbeRepository
+                .findByProductIdAndProbesAfter(eq(productEntity.getId()), any()))
+                .thenReturn(probes);
+
+        PriceHistoryModel priceHistory = productService.getPriceHistory(productEntity.getId());
+        assertNotNull(priceHistory);
+
+        List<String> columns = priceHistory.getColumns();
+        assertNotNull(columns);
+        assertTrue(columns.size() > 2);
+
+        List<String> sortedDates = columns.stream()
+                .map(Integer::parseInt)
+                .distinct()
+                .sorted(Integer::compareTo)
+                .map(String::valueOf)
+                .collect(Collectors.toList());
+        assertEquals(sortedDates, columns);
+    }
+
+    @Test
+    void rowsSortedByTimestamp() {
+        when(productRepository.findById(eq(productEntity.getId())))
+                .thenReturn(Optional.of(productEntity));
+        when(productProbeRepository
+                .findByProductIdAndProbesAfter(eq(productEntity.getId()), any()))
+                .thenReturn(probes);
+
+        PriceHistoryModel priceHistory = productService.getPriceHistory(productEntity.getId());
+        assertNotNull(priceHistory);
+
+        Map<String, List<Float>> rows = priceHistory.getRows();
+        assertNotNull(rows);
+        assertTrue(rows.size() > 2);
+        assertTrue(rows instanceof TreeMap);
+
+        Set<String> keys = rows.keySet();
+//        assertTrue(keys instanceof TreeSet);
+
+        TreeSet<String> sortedKeys = keys.stream()
+                .map(key -> LocalDateTime.parse(key, DATE_TIME_FORMATTER))
+                .sorted(LocalDateTime::compareTo)
+                .map(DATE_TIME_FORMATTER::format)
+                .collect(Collectors.toCollection(TreeSet::new));
+        assertEquals(sortedKeys, keys);
+    }
+
+    @Ignore
     @Test
     void getPriceHistory() { // TODO: MAKE THIS TEST STABILITY
         final int PROBES_COUNT = 80;

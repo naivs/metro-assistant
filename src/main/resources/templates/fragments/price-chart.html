@@ -5,7 +5,7 @@
             google.charts.setOnLoadCallback(drawBackgroundColor);
 
             function drawBackgroundColor() {
-                var chart = new google.visualization.LineChart(document.getElementById(/*[[${metroId}]]*/));
+                var chart = new google.charts.Line(document.getElementById(/*[[${metroId}]]*/));
 
                 var cols = [{'id': 'X', 'label': 'Date', 'type': 'date'}];
                 var colsData = /*[[${history.columns}]]*/ [];
@@ -18,7 +18,7 @@
                 Object.keys(rowsData).forEach(function(date) {
                     var c = [];
                     var rowValues = rowsData[date];
-                    console.log('dateKey: ' + date);
+                    // console.log('dateKey: ' + date);
                     c.push({v: new Date(date)});
 
                     rowValues.forEach(function (val) {
