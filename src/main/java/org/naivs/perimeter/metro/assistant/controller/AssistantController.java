@@ -1,7 +1,6 @@
 package org.naivs.perimeter.metro.assistant.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.naivs.perimeter.metro.assistant.config.MetroConfig;
 import org.naivs.perimeter.metro.assistant.data.entity.ProductEntity;
 import org.naivs.perimeter.metro.assistant.service.ProductService;
 import org.springframework.stereotype.Controller;
@@ -16,13 +15,11 @@ import java.util.List;
 public class AssistantController {
 
     private final ProductService productService;
-    private final MetroConfig metroConfig;
 
     @GetMapping
     public String products(Model model) {
         List<ProductEntity> products = productService.getProducts();
         model.addAttribute("products", products);
-        model.addAttribute("host", metroConfig.getBaseUrl());
         return "main";
     }
 
