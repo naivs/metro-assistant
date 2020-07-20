@@ -33,6 +33,18 @@
                     'rows': rows
                 });
 
+                var priceFormatter = new google.visualization.NumberFormat({
+                    fractionDigits: 2,
+                    suffix: ' RUB'
+                });
+                colsData.forEach(function (value, index) {
+                    priceFormatter.format(initData, index + 1);
+                });
+                var dateFormatter = new google.visualization.DateFormat({
+                    formatType: 'medium'
+                });
+                dateFormatter.format(initData, 0);
+
                 var initOptions = {
                     hAxis: {
                         title: 'Date'

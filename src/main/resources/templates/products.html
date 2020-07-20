@@ -23,11 +23,18 @@
                             <th scope="row"><span th:text="*{metroId}">id</span></th>
                             <td><span th:text="*{name}">name</span></td>
                             <td><span th:text="*{pack}">pack</span></td>
-                            <td><span th:text="${#numbers.formatDecimal(__${lastProbe.regularPrice}__,0,2)}">price</span></td>
-                            <td><span th:text="${lastProbe.wholesalePrice}">wholeSale</span></td>
-                            <td><span th:text="${lastProbe.leftPct}">left</span></td>
-                            <td><a class="btn btn-dark" th:text="Link"
-                                   th:href="${host} + *{url}"></a></td>
+                            <td><span th:text="${#numbers.formatDecimal(__${lastProbe.regularPrice}__,0,2)} + ' RUB'">price</span></td>
+                            <td>
+                                <div th:each="wpPrice : ${lastProbe.wholesalePrice}">
+                                    <span th:text="${wpPrice.key} + 'pcs. by ' + ${#numbers.formatDecimal(__${wpPrice.value}__,0,2)} + ' RUB'">
+                                        wholeSale
+                                    </span>
+                                </div>
+                            </td>
+                            <td><span th:text="'~' + ${lastProbe.leftPct} + ' %'">left</span></td>
+                            <td><a target="_blank" rel="noopener noreferrer"
+                                   class="btn btn-dark" th:text="Link"
+                                   th:href="*{url}"></a></td>
                         </tr>
                         <tr>
                             <th scope="row"><span>Price Chart</span></th>
@@ -53,7 +60,7 @@
                     <label for="inputUrl">Product URL</label>
                     <input th:name="productUrl" type="text"
                            class="form-control" id="inputUrl" aria-describedby="urlHelp">
-                    <small id="urlHelp" class="form-text text-muted">Use URL without host.</small>
+                    <small id="urlHelp" class="form-text text-muted">Specify link to METRO product page.</small>
                 </div>
                 <button type="submit" class="btn btn-primary">Add</button>
             </form>
