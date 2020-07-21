@@ -6,6 +6,7 @@ import org.naivs.perimeter.metro.assistant.data.entity.ProductEntity;
 import org.naivs.perimeter.metro.assistant.http.ProbeStrategy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,6 +19,7 @@ public class ScheduledService {
     private final ProductService productService;
     private final ProbeStrategy probeStrategy;
 
+    @Transactional
     @Scheduled(initialDelay = 1000 * 10,
             fixedDelayString = "${metro.poll-interval}")
     // TODO: MILLIS ARITHMETIC LEAVE HERE (set in properties minutes or hours only)
