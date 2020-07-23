@@ -2,11 +2,12 @@ package org.naivs.perimeter.metro.assistant.http;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.naivs.perimeter.metro.assistant.component.MetroProductMessageConverter;
 import org.naivs.perimeter.metro.assistant.config.MetroConfig;
-import org.naivs.perimeter.metro.assistant.data.model.MetroProduct;
-import org.naivs.perimeter.metro.assistant.data.model.rest.Product;
-import org.naivs.perimeter.metro.assistant.data.model.rest.Response;
+import org.naivs.perimeter.metro.assistant.data.entity.ProductEntity;
+import org.naivs.perimeter.metro.assistant.data.entity.ProductProbeEntity;
+import org.naivs.perimeter.metro.assistant.data.model.external.PriceLevel;
+import org.naivs.perimeter.metro.assistant.data.model.external.Product;
+import org.naivs.perimeter.metro.assistant.data.model.external.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -16,9 +17,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.annotation.PostConstruct;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
+
+import static java.util.Optional.ofNullable;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -35,7 +39,8 @@ public class MetroClient {
     private void init() {
         restTemplate = new RestTemplate();
         restTemplate.getMessageConverters().add(
-                new MetroProductMessageConverter());
+                new HttpPageMessageConverter()
+        );
         apiUri = UriComponentsBuilder
                 .fromHttpUrl(metroConfig.getApiHost())
                 .pathSegment(metroConfig.getApiBaseUrl())
@@ -43,12 +48,12 @@ public class MetroClient {
                 .toUri();
     }
 
-    public MetroProduct getItem(String itemUrl) {
+    public ProductEntity getItem(String itemUrl) {
         log.info("updating Product: " + itemUrl);
         try {
-            ResponseEntity<MetroProduct> response = restTemplate.getForEntity(
+            ResponseEntity<ProductEntity> response = restTemplate.getForEntity(
                     new URI(metroConfig.getBaseUrl()).resolve(itemUrl),
-                    MetroProduct.class);
+                    ProductEntity.class);
             if (response.getStatusCode().equals(HttpStatus.OK)) {
                 log.info("updating Product response: [OK]");
                 return response.getBody();
@@ -65,9 +70,7 @@ public class MetroClient {
         }
     }
 
-    public Product getProduct(String slug) {
-        Map<String, String> vars = new HashMap<>();
-        vars.put("slug", slug);
+    private Product getProduct(String slug) {
         String productUrl = UriComponentsBuilder.fromUri(apiUri)
                 .pathSegment(PRODUCT_URL)
                 .queryParam("slug", slug)
@@ -81,6 +84,42 @@ public class MetroClient {
         } else {
             log.error(String.format("Item \"%s\" has been not obtained.", slug));
             return null;
+        }
+    }
+
+    public boolean probe(ProductEntity product) {
+        try {
+            // point of choose request type html|json
+            Product rawProduct = getProduct(product.getUrl().substring(
+                    product.getUrl().lastIndexOf('/') + 1)
+            );
+            if (rawProduct == null) {
+                return false;
+            }
+
+            product.setMetroId(rawProduct.getId());
+            product.setName(rawProduct.getName());
+            product.setPack(rawProduct.getPacking().toString());
+
+            ProductProbeEntity productProbeEntity = new ProductProbeEntity();
+            productProbeEntity.setProduct(product);
+            productProbeEntity.setLeftPct(rawProduct.getStock().getText().getPct());
+            productProbeEntity.setRegularPrice(rawProduct.getPrices().getPrice());
+            productProbeEntity.setTimestamp(LocalDateTime.now(ZoneId.of("+3")));
+
+            ofNullable(rawProduct.getPrices().getLevels())
+                    .ifPresent(priceLevels ->
+                            productProbeEntity.setWholesalePrice(priceLevels.stream()
+                                    .collect(Collectors.toMap(
+                                            PriceLevel::getCount,
+                                            PriceLevel::getPrice))
+                            ));
+
+            product.getProbes().add(productProbeEntity);
+            return true;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw e;
         }
     }
 }

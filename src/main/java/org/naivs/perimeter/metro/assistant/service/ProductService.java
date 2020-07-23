@@ -8,7 +8,7 @@ import org.naivs.perimeter.metro.assistant.data.enums.HistoryRange;
 import org.naivs.perimeter.metro.assistant.data.model.PriceHistoryModel;
 import org.naivs.perimeter.metro.assistant.data.repo.ProductProbeRepository;
 import org.naivs.perimeter.metro.assistant.data.repo.ProductRepository;
-import org.naivs.perimeter.metro.assistant.http.ProbeStrategy;
+import org.naivs.perimeter.metro.assistant.http.MetroClient;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -26,7 +26,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductProbeRepository productProbeRepository;
-    private final ProbeStrategy probeStrategy;
+    private final MetroClient metroClient;
 
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter
             .ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -35,7 +35,7 @@ public class ProductService {
         ProductEntity product = new ProductEntity();
         product.setUrl(productUrl);
 
-        return probeStrategy.probe(product) ? productRepository.saveAndFlush(product) : null;
+        return metroClient.probe(product) ? productRepository.saveAndFlush(product) : null;
     }
 
     public List<ProductEntity> getProducts() {
@@ -73,7 +73,7 @@ public class ProductService {
         ProductEntity product = productRepository.findById(productId).orElseThrow(() ->
                 new EntityNotFoundException("Product not found with id: " + productId));
 
-        probeStrategy.probe(product);
+        metroClient.probe(product);
         productRepository.save(product);
     }
 

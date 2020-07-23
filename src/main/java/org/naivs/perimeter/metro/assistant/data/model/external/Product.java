@@ -1,4 +1,4 @@
-package org.naivs.perimeter.metro.assistant.data.model.rest;
+package org.naivs.perimeter.metro.assistant.data.model.external;
 
 import lombok.Data;
 

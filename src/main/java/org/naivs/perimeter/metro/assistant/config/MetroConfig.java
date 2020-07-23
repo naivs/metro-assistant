@@ -2,11 +2,7 @@ package org.naivs.perimeter.metro.assistant.config;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.naivs.perimeter.metro.assistant.http.JsonStrategy;
-import org.naivs.perimeter.metro.assistant.http.MetroClient;
-import org.naivs.perimeter.metro.assistant.http.ProbeStrategy;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Getter
@@ -20,9 +16,4 @@ public class MetroConfig {
 
     private String apiHost = "http://localhost:8080";
     private String apiBaseUrl = "api";
-
-    @Bean
-    public ProbeStrategy probeStrategy(MetroClient metroClient) {
-        return new JsonStrategy(metroClient);
-    }
 }
