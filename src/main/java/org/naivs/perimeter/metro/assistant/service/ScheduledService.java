@@ -2,14 +2,9 @@ package org.naivs.perimeter.metro.assistant.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.naivs.perimeter.metro.assistant.data.entity.ProductEntity;
-import org.naivs.perimeter.metro.assistant.http.MetroClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -17,7 +12,6 @@ import java.util.stream.Collectors;
 public class ScheduledService {
 
     private final ProductService productService;
-    private final MetroClient metroClient;
 
     @Transactional
     @Scheduled(initialDelay = 1000 * 10,
@@ -26,16 +20,7 @@ public class ScheduledService {
     public void performUpdate() {
         long start = System.currentTimeMillis();
         log.info("product update procedure started..");
-
-        log.info("product polling started..");
-        List<ProductEntity> updatedProducts = productService.getProducts()
-                .stream()
-                .filter(metroClient::probe)
-                .collect(Collectors.toList());
-        log.info("product polling finished..");
-        log.info("product saving..");
-        productService.saveOrUpdateAll(updatedProducts);
-
+        productService.pollAllProducts();
         log.info(String.format(
                 "product update procedure finished.. (at %f sec.)",
                 (System.currentTimeMillis() - start) / 1000F));

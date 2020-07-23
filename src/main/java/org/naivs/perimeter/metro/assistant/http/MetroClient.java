@@ -48,7 +48,19 @@ public class MetroClient {
                 .toUri();
     }
 
-    public ProductEntity getItem(String itemUrl) {
+    public boolean poll(ProductEntity product) {
+        try {
+            // point of choose request type html|json
+            pollForJson(product.getUrl().substring(
+                    product.getUrl().lastIndexOf('/') + 1));
+            return true;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw e;
+        }
+    }
+
+    private ProductEntity pollForHtml(String itemUrl) {
         log.info("updating Product: " + itemUrl);
         try {
             ResponseEntity<ProductEntity> response = restTemplate.getForEntity(
@@ -59,18 +71,22 @@ public class MetroClient {
                 return response.getBody();
             } else {
                 log.error("updating Product response: [FAIL]");
-                throw new RuntimeException(
+                log.error(
                         String.format("Response code: %s\n" +
                                 "Response body:%s", response.getStatusCode(), response.getBody())
                 );
+                return null;
             }
         } catch (URISyntaxException e) {
-            throw new RuntimeException(
+            log.error(
                     String.format("Item \"%s\" has been not obtained.", itemUrl), e);
+            return null;
         }
     }
 
-    private Product getProduct(String slug) {
+    private ProductEntity pollForJson(String slug) {
+        ProductEntity productEntity = new ProductEntity();
+
         String productUrl = UriComponentsBuilder.fromUri(apiUri)
                 .pathSegment(PRODUCT_URL)
                 .queryParam("slug", slug)
@@ -80,34 +96,23 @@ public class MetroClient {
                 restTemplate.getForEntity(productUrl, Response.class);
         if (response.getBody() != null && response.getStatusCode().equals(HttpStatus.OK)) {
             List<Product> products = response.getBody().getData().getData();
-            return products.size() > 0 ? products.get(0) : null;
-        } else {
-            log.error(String.format("Item \"%s\" has been not obtained.", slug));
-            return null;
-        }
-    }
-
-    public boolean probe(ProductEntity product) {
-        try {
-            // point of choose request type html|json
-            Product rawProduct = getProduct(product.getUrl().substring(
-                    product.getUrl().lastIndexOf('/') + 1)
-            );
-            if (rawProduct == null) {
-                return false;
+            Product product = products.size() > 0 ? products.get(0) : null;
+            if (product == null) {
+                log.error(String.format("For \"%s\" all elements in response is null.", slug));
+                return null;
             }
 
-            product.setMetroId(rawProduct.getId());
-            product.setName(rawProduct.getName());
-            product.setPack(rawProduct.getPacking().toString());
+            productEntity.setMetroId(product.getId());
+            productEntity.setName(product.getName());
+            productEntity.setPack(product.getPacking().toString());
 
             ProductProbeEntity productProbeEntity = new ProductProbeEntity();
-            productProbeEntity.setProduct(product);
-            productProbeEntity.setLeftPct(rawProduct.getStock().getText().getPct());
-            productProbeEntity.setRegularPrice(rawProduct.getPrices().getPrice());
+            productProbeEntity.setProduct(productEntity);
+            productProbeEntity.setLeftPct(product.getStock().getText().getPct());
+            productProbeEntity.setRegularPrice(product.getPrices().getPrice());
             productProbeEntity.setTimestamp(LocalDateTime.now(ZoneId.of("+3")));
 
-            ofNullable(rawProduct.getPrices().getLevels())
+            ofNullable(product.getPrices().getLevels())
                     .ifPresent(priceLevels ->
                             productProbeEntity.setWholesalePrice(priceLevels.stream()
                                     .collect(Collectors.toMap(
@@ -115,11 +120,11 @@ public class MetroClient {
                                             PriceLevel::getPrice))
                             ));
 
-            product.getProbes().add(productProbeEntity);
-            return true;
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw e;
+            productEntity.getProbes().add(productProbeEntity);
+            return productEntity;
+        } else {
+            log.error(String.format("Item \"%s\" has been not obtained.", slug));
+            return null;
         }
     }
 }
