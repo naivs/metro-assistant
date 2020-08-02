@@ -51,8 +51,7 @@ public class MetroClient {
     public boolean poll(ProductEntity product) {
         try {
             // point of choose request type html|json
-            pollForJson(product.getUrl().substring(
-                    product.getUrl().lastIndexOf('/') + 1));
+            pollForJson(product);
             return true;
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -60,32 +59,31 @@ public class MetroClient {
         }
     }
 
-    private ProductEntity pollForHtml(String itemUrl) {
-        log.info("updating Product: " + itemUrl);
+    private void pollForHtml(ProductEntity productEntity) {
+        log.info("updating Product: " + productEntity.getUrl());
         try {
             ResponseEntity<ProductEntity> response = restTemplate.getForEntity(
-                    new URI(metroConfig.getBaseUrl()).resolve(itemUrl),
-                    ProductEntity.class);
+                    new URI(productEntity.getUrl()), ProductEntity.class);
             if (response.getStatusCode().equals(HttpStatus.OK)) {
                 log.info("updating Product response: [OK]");
-                return response.getBody();
+                ProductEntity product = response.getBody();
+                // fixme: map to product arg
             } else {
                 log.error("updating Product response: [FAIL]");
                 log.error(
                         String.format("Response code: %s\n" +
                                 "Response body:%s", response.getStatusCode(), response.getBody())
                 );
-                return null;
             }
         } catch (URISyntaxException e) {
             log.error(
-                    String.format("Item \"%s\" has been not obtained.", itemUrl), e);
-            return null;
+                    String.format("Item \"%s\" has been not obtained.", productEntity.getUrl()), e);
         }
     }
 
-    private ProductEntity pollForJson(String slug) {
-        ProductEntity productEntity = new ProductEntity();
+    private void pollForJson(ProductEntity productEntity) {
+        String slug = productEntity.getUrl().substring(
+                productEntity.getUrl().lastIndexOf('/') + 1);
 
         String productUrl = UriComponentsBuilder.fromUri(apiUri)
                 .pathSegment(PRODUCT_URL)
@@ -99,7 +97,7 @@ public class MetroClient {
             Product product = products.size() > 0 ? products.get(0) : null;
             if (product == null) {
                 log.error(String.format("For \"%s\" all elements in response is null.", slug));
-                return null;
+                return;
             }
 
             productEntity.setMetroId(product.getId());
@@ -121,10 +119,8 @@ public class MetroClient {
                             ));
 
             productEntity.getProbes().add(productProbeEntity);
-            return productEntity;
         } else {
             log.error(String.format("Item \"%s\" has been not obtained.", slug));
-            return null;
         }
     }
 }
