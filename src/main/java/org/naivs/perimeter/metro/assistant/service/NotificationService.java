@@ -65,6 +65,12 @@ public interface NotificationService {
             return notification;
         }
 
+        public static Notification error(String message) {
+            Notification notification = init(NotificationType.ERROR);
+            notification.setArgs(new Object[]{message});
+            return notification;
+        }
+
         private static Notification init(NotificationType type) {
             Notification notification = new Notification();
             notification.setType(type);

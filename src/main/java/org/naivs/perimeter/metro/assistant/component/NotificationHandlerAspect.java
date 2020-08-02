@@ -34,11 +34,11 @@ public class NotificationHandlerAspect {
         Set<Notification> notifications = new HashSet<>();
 
         if (isSuccess) {
-            // handle
             notificationHandlers.forEach(handler -> handler.handle(product, notifications));
         } else {
-            log.error("Product {} not updated.", product);
-            // todo: send notification
+            String msg = String.format("Product %s not updated.", product);
+            log.error(msg);
+            notifications.add(NotificationService.NotificationFactory.error(msg));
         }
 
         notifications.forEach(notificationService::sendNotification);
