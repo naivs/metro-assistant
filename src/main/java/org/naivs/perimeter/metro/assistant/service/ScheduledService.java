@@ -15,8 +15,7 @@ public class ScheduledService {
 
     @Transactional
     @Scheduled(initialDelay = 1000 * 10,
-            fixedDelayString = "${metro.poll-interval}")
-    // TODO: MILLIS ARITHMETIC LEAVE HERE (set in properties minutes or hours only)
+            fixedDelayString = "#{${metro.poll-interval} * 60 * 60 * 1000}")
     public void performUpdate() {
         long start = System.currentTimeMillis();
         log.info("product update procedure started..");

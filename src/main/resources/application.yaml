@@ -1,14 +1,23 @@
 spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+metro:
+  poll-interval: 6 # in hours. 4 times a day
+bot:
+  name: ${BOT_NAME}
+  key: ${BOT_KEY}
+  recipient-list:
+    - 337881874
+    - 459800218 # nelly
+---
+spring:
   profiles: dev
   datasource:
     url: jdbc:postgresql://localhost:5433/metro-assistant
     username: admin
     password: admin
-  jpa:
-    hibernate:
-      ddl-auto: update
-metro:
-  poll-interval: 21600000 # 4 times a day
+#metro:
 #  base-url: https://nn.metro-cc.ru
 #  api-host: https://api.metro-cc.ru
 #  api-base-url: api/v1/C98BB1B547ECCC17D8AEBEC7116D6/21
@@ -20,11 +29,7 @@ spring:
     url: jdbc:postgresql://192.168.0.2:5433/metro-assistant
     username: postgres
     password: 123
-  jpa:
-    hibernate:
-      ddl-auto: update
 metro:
-  poll-interval: 21600000 # 4 times a day
   base-url: https://nn.metro-cc.ru
   api-host: https://api.metro-cc.ru
   api-base-url: api/v1/C98BB1B547ECCC17D8AEBEC7116D6/21
