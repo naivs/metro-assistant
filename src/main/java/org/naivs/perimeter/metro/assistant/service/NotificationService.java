@@ -21,15 +21,16 @@ public interface NotificationService {
             return notification;
         }
 
-        public static Notification produtSaleOut(String productName, String pack) {
+        public static Notification produtSaleOut(String productName, String priceLevel) {
             Notification notification = init(NotificationType.PRODUCT_SALE_OUT);
-            notification.setArgs(new Object[]{productName, pack});
+            notification.setArgs(new Object[]{productName, priceLevel});
             return notification;
         }
 
-        public static Notification produtSaleReturn(String productName, String pack) {
+        public static Notification produtSaleReturn(String productName, String priceLevel,
+                                                    float price, String pack) {
             Notification notification = init(NotificationType.PRODUCT_SALE_RETURN);
-            notification.setArgs(new Object[]{productName, pack});
+            notification.setArgs(new Object[]{productName, priceLevel, price, pack});
             return notification;
         }
 
@@ -47,7 +48,8 @@ public interface NotificationService {
             return notification;
         }
 
-        public static Notification priceLevelOne(String productName, float price, String pack, float deltaPrice) {
+        public static Notification priceLevelOne(String productName, float price,
+                                                 String pack, float deltaPrice) {
             Notification notification = init(NotificationType.PRICE_LEVEL_ONE);
             notification.setArgs(new Object[]{productName, price, pack, deltaPrice});
             return notification;
