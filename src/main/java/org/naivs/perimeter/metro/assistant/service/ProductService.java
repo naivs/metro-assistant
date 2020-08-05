@@ -82,7 +82,8 @@ public class ProductService {
                 .stream()
                 .collect(Collectors.groupingBy(metroClient::poll));
         log.info("product polling finished. {} success. {} failed.",
-                polledProducts.get(true).size(), polledProducts.get(false).size());
+                ofNullable(polledProducts.get(true)).map(List::size).orElse(0),
+                ofNullable(polledProducts.get(false)).map(List::size).orElse(0));
         log.info("product saving..");
         productRepository.saveAll(polledProducts.get(true));
     }
