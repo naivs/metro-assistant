@@ -8,7 +8,7 @@ import org.naivs.perimeter.metro.assistant.data.enums.HistoryRange;
 import org.naivs.perimeter.metro.assistant.data.model.PriceHistoryModel;
 import org.naivs.perimeter.metro.assistant.data.repo.ProductProbeRepository;
 import org.naivs.perimeter.metro.assistant.data.repo.ProductRepository;
-import org.naivs.perimeter.metro.assistant.http.ProbeStrategy;
+import org.naivs.perimeter.metro.assistant.http.MetroClient;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -26,7 +26,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductProbeRepository productProbeRepository;
-    private final ProbeStrategy probeStrategy;
+    private final MetroClient metroClient;
 
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter
             .ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -35,7 +35,7 @@ public class ProductService {
         ProductEntity product = new ProductEntity();
         product.setUrl(productUrl);
 
-        return probeStrategy.probe(product) ? productRepository.saveAndFlush(product) : null;
+        return metroClient.poll(product) ? productRepository.saveAndFlush(product) : null;
     }
 
     public List<ProductEntity> getProducts() {
@@ -65,16 +65,26 @@ public class ProductService {
         return priceHistory;
     }
 
-    public void saveOrUpdateAll(List<ProductEntity> products) {
-        productRepository.saveAll(products);
-    }
-
     public void pollProduct(Long productId) {
         ProductEntity product = productRepository.findById(productId).orElseThrow(() ->
                 new EntityNotFoundException("Product not found with id: " + productId));
 
-        probeStrategy.probe(product);
-        productRepository.save(product);
+        if (metroClient.poll(product)) {
+            productRepository.save(product);
+            return;
+        }
+        log.error("Product with id={} is not updated.", productId);
+    }
+
+    public void pollAllProducts() {
+        log.info("product polling started..");
+        Map<Boolean, List<ProductEntity>> polledProducts = productRepository.findAll()
+                .stream()
+                .collect(Collectors.groupingBy(metroClient::poll));
+        log.info("product polling finished. {} success. {} failed.",
+                polledProducts.get(true).size(), polledProducts.get(false).size());
+        log.info("product saving..");
+        productRepository.saveAll(polledProducts.get(true));
     }
 
     public void delete(Long id) {

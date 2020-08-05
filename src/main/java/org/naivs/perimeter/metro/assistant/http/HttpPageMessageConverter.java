@@ -1,11 +1,12 @@
-package org.naivs.perimeter.metro.assistant.component;
+package org.naivs.perimeter.metro.assistant.http;
 
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.naivs.perimeter.metro.assistant.data.model.MetroProduct;
+import org.naivs.perimeter.metro.assistant.data.entity.ProductEntity;
+import org.naivs.perimeter.metro.assistant.data.entity.ProductProbeEntity;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -13,15 +14,15 @@ import org.springframework.http.converter.AbstractHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
-public class MetroProductMessageConverter extends AbstractHttpMessageConverter<MetroProduct> {
+public class HttpPageMessageConverter extends AbstractHttpMessageConverter<ProductEntity> {
 
-    public MetroProductMessageConverter() {
+    public HttpPageMessageConverter() {
         List<MediaType> mediaTypes = new ArrayList<>();
         mediaTypes.add(MediaType.TEXT_PLAIN);
         mediaTypes.add(MediaType.APPLICATION_XML);
@@ -30,16 +31,16 @@ public class MetroProductMessageConverter extends AbstractHttpMessageConverter<M
     }
 
     @Override
-    protected boolean supports(Class<?> aClass) {
-        return aClass.isAssignableFrom(MetroProduct.class);
+    protected boolean supports(@NotNull Class<?> aClass) {
+        return aClass.isAssignableFrom(ProductEntity.class);
     }
 
+    @NotNull
     @Override
-    protected MetroProduct readInternal(Class<? extends MetroProduct> aClass,
-                                        HttpInputMessage httpInputMessage
+    protected ProductEntity readInternal(@NotNull Class<? extends ProductEntity> aClass,
+                                         @NotNull HttpInputMessage httpInputMessage
     ) throws IOException, HttpMessageNotReadableException {
-        MetroProduct product = new MetroProduct();
-        product.setWholesalePrice(new HashMap<>());
+        ProductEntity product = new ProductEntity();
 
         Document doc = Jsoup.parse(httpInputMessage.getBody(), null, "base");
         Elements productElements = doc.getElementsByAttributeValue("itemtype", "http://schema.org/Product");
@@ -58,12 +59,13 @@ public class MetroProductMessageConverter extends AbstractHttpMessageConverter<M
     }
 
     @Override
-    protected void writeInternal(MetroProduct item, HttpOutputMessage httpOutputMessage
-    ) throws IOException, HttpMessageNotWritableException {
-
+    protected void writeInternal(@NotNull ProductEntity item,
+                                 @NotNull HttpOutputMessage httpOutputMessage
+    ) throws HttpMessageNotWritableException {
+        throw new RuntimeException("Not implemented.");
     }
 
-    private void parseProductTop(MetroProduct product, Element element) {
+    private void parseProductTop(ProductEntity product, Element element) {
         // identifier and title
         String name = element.getElementsByAttributeValue("itemprop", "name").text();
         Long id = Long.parseLong(
@@ -73,7 +75,7 @@ public class MetroProductMessageConverter extends AbstractHttpMessageConverter<M
         product.setId(id);
     }
 
-    private void parseSidebar(MetroProduct product, Element element) {
+    private void parseSidebar(ProductEntity product, Element element) {
         // me, regularPrice, wholesalePrice, leftPct
         /*
             data-article="113309"
@@ -98,6 +100,10 @@ public class MetroProductMessageConverter extends AbstractHttpMessageConverter<M
         float regularPrice = Float.parseFloat(priceElement.getElementsByClass("int").first().text());
         regularPrice += Float.parseFloat(priceElement.getElementsByClass("float").first().text()) * 0.01f;
 
+        ProductProbeEntity probe = new ProductProbeEntity();
+        probe.setProduct(product);
+        probe.setRegularPrice(regularPrice);
+
         // parse opt prices
         Elements optPrices = priceElement.getElementsByClass("opt-price-lvl__item");
         for (Element optPrice : optPrices) {
@@ -107,16 +113,16 @@ public class MetroProductMessageConverter extends AbstractHttpMessageConverter<M
 
             float optPr = Float.parseFloat(optPrice.getElementsByClass("int").text().split(",")[0]);
             optPr += Float.parseFloat(optPrice.getElementsByClass("float").text()) * 0.01f;
-            product.getWholesalePrice().put(amount, optPr);
+            probe.getWholesalePrice().put(amount, optPr);
         }
 
         Element stock = element.getElementsByClass("b-product-sidebar-stock").first();
         String left = stock.getElementsByClass("b-product-stock_scale").first()
                 .getElementsByAttribute("style").first().attr("style");
 //        Attributes attributes = stock.getElementsByAttribute("add-to-list").first().attributes();
+        probe.setLeftPct(Integer.parseInt(left.substring(6, left.length() - 1)));
 
-        product.setMe(me);
-        product.setRegularPrice(regularPrice);
-        product.setLeftPct(Integer.parseInt(left.substring(6, left.length() - 1)));
+        product.setPack(me);
+        product.getProbes().add(probe);
     }
 }

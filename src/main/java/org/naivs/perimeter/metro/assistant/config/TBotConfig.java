@@ -5,15 +5,16 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-@Getter
+import java.util.ArrayList;
+import java.util.List;
+
 @Setter
+@Getter
 @Configuration
-@ConfigurationProperties(prefix = "metro")
-public class MetroConfig {
+@ConfigurationProperties(prefix = "bot")
+public class TBotConfig {
 
-    private Long pollInterval;
-    private String baseUrl = "http://localhost:8080";
-
-    private String apiHost = "http://localhost:8080";
-    private String apiBaseUrl = "api";
+    private String name;
+    private String key;
+    private List<String> recipientList = new ArrayList<>();
 }
