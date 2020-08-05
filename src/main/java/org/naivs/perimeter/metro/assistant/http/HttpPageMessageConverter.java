@@ -61,7 +61,7 @@ public class HttpPageMessageConverter extends AbstractHttpMessageConverter<Produ
     @Override
     protected void writeInternal(@NotNull ProductEntity item,
                                  @NotNull HttpOutputMessage httpOutputMessage
-    ) throws IOException, HttpMessageNotWritableException {
+    ) throws HttpMessageNotWritableException {
         throw new RuntimeException("Not implemented.");
     }
 

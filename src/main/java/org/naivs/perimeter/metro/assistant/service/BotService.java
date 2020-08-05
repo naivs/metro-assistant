@@ -1,6 +1,7 @@
 package org.naivs.perimeter.metro.assistant.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.naivs.perimeter.metro.assistant.config.TBotConfig;
 import org.naivs.perimeter.metro.assistant.telegram.MyBot;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import javax.annotation.PostConstruct;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BotService {
@@ -27,7 +29,7 @@ public class BotService {
         try {
             botsApi.registerBot(bot);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            log.error("Bot not registered.", e);
         }
     }
 

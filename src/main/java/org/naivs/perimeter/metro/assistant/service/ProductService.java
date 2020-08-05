@@ -69,19 +69,22 @@ public class ProductService {
         ProductEntity product = productRepository.findById(productId).orElseThrow(() ->
                 new EntityNotFoundException("Product not found with id: " + productId));
 
-        metroClient.poll(product);
-        productRepository.save(product);
+        if (metroClient.poll(product)) {
+            productRepository.save(product);
+            return;
+        }
+        log.error("Product with id={} is not updated.", productId);
     }
 
     public void pollAllProducts() {
         log.info("product polling started..");
-        List<ProductEntity> polledProducts = productRepository.findAll()
+        Map<Boolean, List<ProductEntity>> polledProducts = productRepository.findAll()
                 .stream()
-                .filter(metroClient::poll)
-                .collect(Collectors.toList());
-        log.info(String.format("product polling finished. %d products.", polledProducts.size()));
+                .collect(Collectors.groupingBy(metroClient::poll));
+        log.info("product polling finished. {} success. {} failed.",
+                polledProducts.get(true).size(), polledProducts.get(false).size());
         log.info("product saving..");
-        productRepository.saveAll(polledProducts);
+        productRepository.saveAll(polledProducts.get(true));
     }
 
     public void delete(Long id) {

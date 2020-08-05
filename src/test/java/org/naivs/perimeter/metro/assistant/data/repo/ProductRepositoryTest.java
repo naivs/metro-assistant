@@ -51,6 +51,6 @@ class ProductRepositoryTest {
         List<ProductProbeEntity> foundProbes = foundProduct.getProbes();
         assertNotNull(foundProduct);
         assertEquals(persistedProduct, foundProduct);
-//        assertEquals(persistedAndSortedProbes, foundProbes);
+        assertEquals(persistedAndSortedProbes, foundProbes);
     }
 }
