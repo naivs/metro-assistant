@@ -2,24 +2,20 @@ package org.naivs.perimeter.metro.assistant.component;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoSettings;
 import org.naivs.perimeter.metro.assistant.data.entity.ProductEntity;
 import org.naivs.perimeter.metro.assistant.data.entity.ProductProbeEntity;
 import org.naivs.perimeter.metro.assistant.data.enums.NotificationType;
 import org.naivs.perimeter.metro.assistant.data.model.Notification;
+import org.naivs.perimeter.metro.assistant.utils.ProductProbeBuilder;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@MockitoSettings
 class StockHandlerTest {
 
-    @InjectMocks
-    private StockHandler stockHandler;
+    private final StockHandler stockHandler = new StockHandler();
 
     private static ProductEntity product;
     private static List<Notification> notifications;
@@ -35,12 +31,12 @@ class StockHandlerTest {
 
         product.getProbes().clear();
         product.getProbes().add(
-                ProductProbeBuilder.builder().build());
+                ProductProbeBuilder.builder(product).build());
     }
 
     @Test
     void handleOneIsOutOfStock() {
-        ProductProbeEntity probe = ProductProbeBuilder.builder()
+        ProductProbeEntity probe = ProductProbeBuilder.builder(product)
                 .id(2L)
                 .left(0)
                 .build();
@@ -59,7 +55,7 @@ class StockHandlerTest {
     @Test
     void handleOneReturnInStock() {
         product.getProbes().get(0).setLeftPct(0);
-        ProductProbeEntity probe = ProductProbeBuilder.builder()
+        ProductProbeEntity probe = ProductProbeBuilder.builder(product)
                 .id(2L)
                 .left(134)
                 .regularPrice(140.12F)
@@ -79,7 +75,7 @@ class StockHandlerTest {
     @Test
     void handleSalesOut() {
         int rmPriceLvl = 3;
-        ProductProbeEntity probe = ProductProbeBuilder.builder()
+        ProductProbeEntity probe = ProductProbeBuilder.builder(product)
                 .build();
         probe.getWholesalePrice().remove(rmPriceLvl);
         product.getProbes().add(probe);
@@ -97,7 +93,7 @@ class StockHandlerTest {
     void handleSalesReturn() {
         int retPriceLvl = 3;
         product.getProbes().get(0).getWholesalePrice().remove(retPriceLvl);
-        ProductProbeEntity probe = ProductProbeBuilder.builder()
+        ProductProbeEntity probe = ProductProbeBuilder.builder(product)
                 .build();
         product.getProbes().add(probe);
         stockHandler.handle(product, notifications);
@@ -109,56 +105,5 @@ class StockHandlerTest {
                 product.getName(), retPriceLvl + " шт.",
                 probe.getWholesalePrice().get(retPriceLvl), product.getPack());
         assertEquals(expectedText, notifications.get(0).toString());
-    }
-
-    static class ProductProbeBuilder {
-        private ProductProbeEntity probe;
-
-        private ProductProbeBuilder() {
-            probe = new ProductProbeEntity();
-            probe.setId(1L);
-            probe.setTimestamp(LocalDateTime.now());
-            probe.setLeftPct(123);
-            probe.setProduct(product);
-            probe.setRegularPrice(125.04F);
-
-            probe.getWholesalePrice()
-                    .put(3, 115.00F);
-            probe.getWholesalePrice()
-                    .put(15, 101.50F);
-        }
-
-        static ProductProbeBuilder builder() {
-            return new ProductProbeBuilder();
-        }
-
-        ProductProbeBuilder id(Long id) {
-            probe.setId(id);
-            return this;
-        }
-
-        ProductProbeBuilder timestamp(LocalDateTime when) {
-            probe.setTimestamp(when);
-            return this;
-        }
-
-        ProductProbeBuilder left(int left) {
-            probe.setLeftPct(left);
-            return this;
-        }
-
-        ProductProbeBuilder product(ProductEntity product) {
-            probe.setProduct(product);
-            return this;
-        }
-
-        ProductProbeBuilder regularPrice(float price) {
-            probe.setRegularPrice(price);
-            return this;
-        }
-
-        ProductProbeEntity build() {
-            return probe;
-        }
     }
 }

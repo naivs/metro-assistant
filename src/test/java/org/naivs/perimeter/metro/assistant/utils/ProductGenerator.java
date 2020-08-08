@@ -62,7 +62,7 @@ public class ProductGenerator {
 
         Map<Integer, Float> wholesales = probe.getWholesalePrice();
 
-        int rounds = random.nextInt(3) + 1;
+        int rounds = random.nextInt(3) + 2;
         for (int i = 0; i < rounds; i++) {
             wholesales.put(random.nextInt(15) + 1,
                     probe.getRegularPrice() + random.nextInt(50));
